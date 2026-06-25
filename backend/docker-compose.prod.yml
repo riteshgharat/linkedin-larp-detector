@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  api:
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+    restart: always
+    environment:
+      - ENVIRONMENT=production
+
+  redis:
+    ports: []           # Redis NOT exposed externally in production
+    restart: always

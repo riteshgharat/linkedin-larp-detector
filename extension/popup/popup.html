@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LinkedIn LARP Detector</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">🎭</span>
+        <div>
+          <div class="logo-title">LARP Detector</div>
+          <div class="logo-sub">LinkedIn Edition</div>
+        </div>
+      </div>
+      <button id="settingsBtn" class="icon-btn" title="Settings" aria-label="Open settings">⚙️</button>
+    </header>
+
+    <!-- Status pill -->
+    <div id="statusBar" class="status-bar">
+      <span id="statusDot" class="status-dot status-checking"></span>
+      <span id="statusText">Checking backend…</span>
+    </div>
+
+    <!-- Main panel -->
+    <main id="mainPanel">
+      <p class="hint">Paste a LinkedIn post below to analyze it, or click<br><strong>🔍 Detect LARP</strong> on any post in your feed.</p>
+
+      <div class="textarea-wrapper">
+        <textarea
+          id="postInput"
+          placeholder="Paste a LinkedIn post here…"
+          maxlength="3000"
+          rows="6"
+          aria-label="LinkedIn post text"
+        ></textarea>
+        <div class="char-count"><span id="charCount">0</span> / 3000</div>
+      </div>
+
+      <button id="analyzeBtn" class="btn btn-primary" disabled>
+        <span id="analyzeBtnText">Analyze Post</span>
+        <span id="analyzeBtnSpinner" class="spinner hidden"></span>
+      </button>
+
+      <!-- Result card -->
+      <div id="resultCard" class="result-card hidden">
+        <div class="result-header">
+          <div class="score-block">
+            <span id="scoreNum" class="score-num">—</span>
+            <span class="score-label">/ 100</span>
+          </div>
+          <div class="score-meta">
+            <div id="scoreVerdict" class="score-verdict">—</div>
+            <div id="scoreCategory" class="score-category">—</div>
+          </div>
+        </div>
+
+        <div class="score-bar-track">
+          <div id="scoreBar" class="score-bar"></div>
+        </div>
+
+        <div class="result-section">
+          <div class="section-title">Why it scored this way</div>
+          <p id="reasonText" class="section-body">—</p>
+        </div>
+
+        <div class="result-section">
+          <div class="section-title">What they actually mean</div>
+          <p id="translationText" class="section-body translation">—</p>
+        </div>
+
+        <div id="cachedBadge" class="cached-badge hidden">⚡ Cached result</div>
+      </div>
+
+      <!-- Error message -->
+      <div id="errorMsg" class="error-msg hidden"></div>
+    </main>
+
+    <!-- Settings panel -->
+    <div id="settingsPanel" class="settings-panel hidden">
+      <h2 class="settings-title">Settings</h2>
+      <label class="settings-label" for="apiUrlInput">Backend URL</label>
+      <input
+        id="apiUrlInput"
+        type="url"
+        class="settings-input"
+        placeholder="http://localhost:8000"
+        aria-label="Backend API URL"
+      />
+      <button id="saveSettingsBtn" class="btn btn-primary" style="margin-top:10px">Save</button>
+      <button id="backBtn" class="btn btn-ghost" style="margin-top:6px">← Back</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
