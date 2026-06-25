@@ -1,53 +1,89 @@
+import asyncio
 import json
-import os
+import logging
 from pathlib import Path
 
-from groq import AsyncGroq
-from app.config import settings
+from groq import (
+    APIConnectionError,
+    APIError,
+    APITimeoutError,
+    AsyncGroq,
+    RateLimitError,
+)
 
-# Load the system prompt once at module level
+from app.config import settings
+from app.core.errors import ServiceError
+
+logger = logging.getLogger(__name__)
+
 _PROMPT_PATH = Path(__file__).parent.parent.parent / "prompts" / "system_prompt.txt"
 _SYSTEM_PROMPT: str = _PROMPT_PATH.read_text(encoding="utf-8")
+_REQUIRED_FIELDS = frozenset({"score", "category", "reason", "translation"})
+ANALYSIS_TIMEOUT_SECONDS = 30.0
 
-_client = AsyncGroq(api_key=settings.groq_api_key)
+_client = AsyncGroq(api_key=settings.groq_api_key, timeout=ANALYSIS_TIMEOUT_SECONDS)
 
 
 async def analyze_post(text: str) -> dict:
-    """
-    Call Groq with the post text and return a structured analysis dict.
-    Raises on API or parse errors — caller handles retries / error responses.
-    """
-    completion = await _client.chat.completions.create(
-        model=settings.groq_model,
-        messages=[
-            {"role": "system", "content": _SYSTEM_PROMPT},
-            {
-                "role": "user",
-                "content": (
-                    "Analyze the following LinkedIn post and return ONLY the JSON object:\n\n"
-                    f"{text}"
-                ),
-            },
-        ],
-        temperature=0.2,       # Low temp → consistent, deterministic scoring
-        max_tokens=512,
-        response_format={"type": "json_object"},
-    )
+    """Call Groq and return a structured analysis dict, or raise ServiceError."""
+    try:
+        completion = await asyncio.wait_for(
+            _client.chat.completions.create(
+                model=settings.groq_model,
+                messages=[
+                    {"role": "system", "content": _SYSTEM_PROMPT},
+                    {
+                        "role": "user",
+                        "content": (
+                            "Analyze the following LinkedIn post and return ONLY the JSON object:\n\n"
+                            f"{text}"
+                        ),
+                    },
+                ],
+                temperature=0.2,
+                max_tokens=512,
+                response_format={"type": "json_object"},
+            ),
+            timeout=ANALYSIS_TIMEOUT_SECONDS,
+        )
+    except asyncio.TimeoutError:
+        logger.warning("Groq analysis timed out")
+        raise ServiceError("Analysis timed out. Please try again.", 504)
+    except RateLimitError as exc:
+        logger.warning("Groq rate limit hit: %s", exc)
+        raise ServiceError("Service is busy. Please try again shortly.", 503)
+    except (APIConnectionError, APITimeoutError) as exc:
+        logger.warning("Groq connection error: %s", exc)
+        raise ServiceError("Analysis service unavailable. Please try again.", 503)
+    except APIError as exc:
+        logger.error("Groq API error (status=%s): %s", exc.status_code, exc)
+        if exc.status_code and exc.status_code >= 500:
+            raise ServiceError("Analysis service unavailable. Please try again.", 503)
+        raise ServiceError("Analysis failed. Please try again.", 502)
 
-    raw = completion.choices[0].message.content
-    data = json.loads(raw)
+    try:
+        raw = completion.choices[0].message.content
+        data = json.loads(raw)
+    except (IndexError, AttributeError, TypeError) as exc:
+        logger.error("Groq returned an empty or malformed response: %s", exc)
+        raise ServiceError("Analysis failed. Please try again.", 502)
+    except json.JSONDecodeError as exc:
+        logger.error("Groq returned non-JSON content: %s", exc)
+        raise ServiceError("Analysis failed. Please try again.", 502)
 
-    # Validate required fields are present
-    required = {"score", "category", "reason", "translation"}
-    missing = required - data.keys()
+    missing = _REQUIRED_FIELDS - data.keys()
     if missing:
-        raise ValueError(f"Groq response missing fields: {missing}")
+        logger.error("Groq response missing fields: %s", missing)
+        raise ServiceError("Analysis failed. Please try again.", 502)
 
-    # Clamp score to valid range
-    data["score"] = max(0, min(100, int(data["score"])))
+    try:
+        score = max(0, min(100, int(data["score"])))
+    except (TypeError, ValueError) as exc:
+        logger.error("Groq returned an invalid score: %s", exc)
+        raise ServiceError("Analysis failed. Please try again.", 502)
 
     return {
-        "score": data["score"],
+        "score": score,
         "category": str(data["category"]),
         "reason": str(data["reason"]),
         "translation": str(data["translation"]),
