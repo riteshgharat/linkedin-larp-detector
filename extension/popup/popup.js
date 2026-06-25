@@ -8,7 +8,8 @@
  *  - Settings panel (API URL persistence)
  */
 
-const DEFAULT_API_URL = "http://localhost:8000";
+// const DEFAULT_API_URL = "http://localhost:8000"; use this if backend is running locally
+const DEFAULT_API_URL = "http://56.228.6.62";
 
 // Score tier → color mapping (matches popup.css variables)
 const TIER_COLORS = {
@@ -68,14 +69,18 @@ async function getApiUrl() {
   );
 }
 
+function normalizeApiUrl(url) {
+  return url.trim().replace(/\/+$/, "");
+}
+
 async function setApiUrl(url) {
   return new Promise((resolve) =>
-    chrome.storage.sync.set({ apiUrl: url }, resolve)
+    chrome.storage.sync.set({ apiUrl: normalizeApiUrl(url) }, resolve)
   );
 }
 
 async function checkHealth(apiUrl) {
-  const res = await fetch(`${apiUrl}/health`, { method: "GET" });
+  const res = await fetch(`${normalizeApiUrl(apiUrl)}/health`, { method: "GET" });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
@@ -169,7 +174,7 @@ backBtn.addEventListener("click", () => {
 });
 
 saveSetBtn.addEventListener("click", async () => {
-  const url = apiUrlInput.value.trim();
+  const url = normalizeApiUrl(apiUrlInput.value);
   if (!url) return;
   await setApiUrl(url);
   settingsPanel.classList.add("hidden");

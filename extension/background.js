@@ -4,8 +4,8 @@
  * and manages the API base URL stored in chrome.storage.sync.
  */
 
-// const DEFAULT_API_URL = "http://localhost:8000";
-const DEFAULT_API_URL = "http://localhost:8000";
+// const DEFAULT_API_URL = "http://localhost:8000"; use this if backend is running locally
+const DEFAULT_API_URL = "http://56.228.6.62";
 
 // Listen for messages from popup or content scripts
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -31,12 +31,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
+function normalizeApiUrl(url) {
+  return url.trim().replace(/\/+$/, "");
+}
+
 async function handleAnalyze(text) {
   const { apiUrl } = await new Promise((resolve) =>
     chrome.storage.sync.get({ apiUrl: DEFAULT_API_URL }, resolve)
   );
 
-  const response = await fetch(`${apiUrl}/analyze`, {
+  const response = await fetch(`${normalizeApiUrl(apiUrl)}/analyze`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text }),

@@ -3,7 +3,8 @@
  * Used by popup to call the backend directly (for manual text input).
  */
 
-const DEFAULT_API_URL = "http://localhost:8000";
+// const DEFAULT_API_URL = "http://localhost:8000"; use this if backend is running locally
+const DEFAULT_API_URL = "http://56.228.6.62";
 
 export async function getApiUrl() {
   return new Promise((resolve) => {

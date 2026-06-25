@@ -1,11 +1,12 @@
 from app.config import settings
 
 CORS_ORIGINS: list[str] = (
-    ["*"]                        # Dev: allow all origins (including extension)
-    if settings.environment == "development"
-    else [
-        "chrome-extension://*",  # Prod: extension requests only
-    ]
+    ["*"] if settings.environment == "development" else []
+)
+
+# Prod: match any installed Chrome extension origin (chrome-extension://<id>)
+CORS_ORIGIN_REGEX: str | None = (
+    None if settings.environment == "development" else r"^chrome-extension://.*$"
 )
 
 

@@ -66,7 +66,25 @@ backend/            ← FastAPI + Redis (Docker)
 
 ---
 
+## How to run the extensions
+If you wanna connect to the hosted backend
+### Load the Chrome extension
+
+1. Open `chrome://extensions/`
+2. Enable **Developer mode** (top right toggle)
+3. Click **Load unpacked**
+4. Select the `extension/` folder
+
+### Test it
+
+- Go to [linkedin.com](https://www.linkedin.com)
+- A **🔍 Detect LARP** button will appear on each post
+- Click it to get the analysis inline
+- Or click the extension icon to paste text manually
+
+
 ## Local Development
+If you wanna run backend locally
 
 ### Prerequisites
 

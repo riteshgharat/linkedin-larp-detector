@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from app.core.security import CORS_ORIGINS
+from app.core.security import CORS_ORIGIN_REGEX, CORS_ORIGINS
 from app.middleware.rate_limit import limiter
 from app.routes.analyze import router
 
@@ -19,6 +19,7 @@ app.state.limiter = limiter
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
+    allow_origin_regex=CORS_ORIGIN_REGEX,
     allow_methods=["POST", "GET"],
     allow_headers=["Content-Type"],
 )
