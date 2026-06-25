@@ -5,6 +5,7 @@ from typing import List
 class Settings(BaseSettings):
     groq_api_key: str
     groq_model: str = "llama-3.3-70b-versatile"
+    use_cache: bool = False
     redis_url: str = "redis://localhost:6379"
     cache_ttl_seconds: int = 86400        # 24 h — same post = same result
     max_post_length: int = 3000

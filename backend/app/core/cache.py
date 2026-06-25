@@ -19,11 +19,15 @@ def make_cache_key(text: str) -> str:
 
 
 async def get_cached(text: str) -> dict | None:
+    if not settings.use_cache:
+        return None
     result = await get_client().get(make_cache_key(text))
     return json.loads(result) if result else None
 
 
 async def set_cached(text: str, data: dict) -> None:
+    if not settings.use_cache:
+        return
     await get_client().setex(
         make_cache_key(text),
         settings.cache_ttl_seconds,

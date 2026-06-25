@@ -114,8 +114,9 @@ All backend settings live in `backend/.env`:
 |---|---|---|
 | `GROQ_API_KEY` | *(required)* | Your Groq API key |
 | `GROQ_MODEL` | `llama-3.3-70b-versatile` | Groq model to use |
-| `REDIS_URL` | `redis://redis:6379` | Redis connection URL |
-| `CACHE_TTL_SECONDS` | `86400` | Cache duration (24h) |
+| `USE_CACHE` | `false` | Set to `true` to cache analysis results in Redis |
+| `REDIS_URL` | `redis://redis:6379` | Redis connection URL (rate limiting always uses Redis) |
+| `CACHE_TTL_SECONDS` | `86400` | Cache duration (24h), only when `USE_CACHE=true` |
 | `MAX_POST_LENGTH` | `3000` | Max input characters |
 | `RATE_LIMIT_PER_MINUTE` | `10` | Requests/minute per IP |
 | `RATE_LIMIT_PER_DAY` | `100` | Requests/day per IP |
@@ -160,22 +161,98 @@ Analyze a LinkedIn post for LARP content.
 
 ## Production Deployment
 
-### Build & run production containers
+### 1. EC2 setup
+
+```bash
+# On a fresh Ubuntu EC2 instance
+sudo apt update && sudo apt install -y docker.io docker-compose-v2 nginx certbot python3-certbot-nginx
+sudo usermod -aG docker $USER
+# Log out and back in so docker group applies
+```
+
+Open inbound ports in the EC2 **Security Group**: `22` (SSH), `80` (HTTP), `443` (HTTPS).
+
+### 2. Configure environment
 
 ```bash
 cd backend
+cp .env.example .env
+# Edit .env:
+#   GROQ_API_KEY=gsk_...
+#   ENVIRONMENT=production
+#   USE_CACHE=true          # optional — enables Redis result caching
+```
 
-# Use prod overrides: 4 workers, Redis not exposed, always-restart
+### 3. Build & run production containers
+
+```bash
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 ```
 
-### Environment variables for production
+This starts FastAPI (4 workers) + Redis. Redis is not exposed externally.
+
+Verify: `curl http://localhost:8000/health`
+
+### 4. Nginx reverse proxy
+
+Copy the included config and point it at the local API:
+
+```bash
+sudo cp nginx/larp.conf /etc/nginx/sites-available/larp
+sudo ln -sf /etc/nginx/sites-available/larp /etc/nginx/sites-enabled/
+sudo rm -f /etc/nginx/sites-enabled/default
+```
+
+Edit `/etc/nginx/sites-available/larp` — replace `server_name _;` with your domain (or Elastic IP hostname), and change the upstream to host networking:
+
+```nginx
+proxy_pass http://127.0.0.1:8000;
+```
+
+Test and reload:
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+### 5. HTTPS (recommended)
+
+If you have a domain pointing at the server:
+
+```bash
+sudo certbot --nginx -d api.yourdomain.com
+```
+
+Certbot auto-renews. Your extension API URL becomes `https://api.yourdomain.com`.
+
+### 6. Extension configuration
+
+In the extension popup **Settings**, set the API URL to your production endpoint (e.g. `https://api.yourdomain.com`).
+
+Also add that host to `extension/manifest.json` under `host_permissions`:
+
+```json
+"host_permissions": [
+  "https://www.linkedin.com/*",
+  "https://api.yourdomain.com/*"
+]
+```
+
+Then reload the extension in `chrome://extensions/`.
+
+### Stable public address (EC2 IP changes on stop/start)
+
+EC2 **public IPs change** every time you stop and start the instance. Do **not** point the extension at a raw IP. Use one of these:
+
+| Approach | Cost | How |
+|---|---|---|
+| **Elastic IP (recommended)** | Free while instance is running | EC2 → Elastic IPs → Allocate → Associate with your instance. IP stays fixed across reboots. |
+| **Domain + Route 53** | ~$0.50/mo for hosted zone | Buy a domain, create an A record pointing to your Elastic IP. Extension uses `https://api.yourdomain.com`. |
+| **Application Load Balancer** | ~$16/mo | ALB gets a stable DNS name (`xxx.elb.amazonaws.com`). Overkill for a single instance. |
+
+**Elastic IP is the simplest fix:** allocate one, associate it with your EC2 instance, and use that IP (or a domain pointing to it) in the extension settings. The IP survives reboots; you only lose it if you release the Elastic IP or terminate the instance.
 
 Set `ENVIRONMENT=production` — this switches CORS from `*` (allow all) to `chrome-extension://*` (extension only).
-
-### Nginx
-
-A reverse proxy config is included at `backend/nginx/larp.conf`. It adds security headers, limits body size to 16 KB, and sets proxy timeouts.
 
 ---
 

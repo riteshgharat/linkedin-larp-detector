@@ -4,6 +4,7 @@
  * and manages the API base URL stored in chrome.storage.sync.
  */
 
+// const DEFAULT_API_URL = "http://localhost:8000";
 const DEFAULT_API_URL = "http://localhost:8000";
 
 // Listen for messages from popup or content scripts
