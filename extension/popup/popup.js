@@ -13,11 +13,11 @@ const DEFAULT_API_URL = "http://56.228.6.62";
 
 // Score tier → color mapping (matches popup.css variables)
 const TIER_COLORS = {
-  genuine:  "#34d399",
-  mild:     "#facc15",
-  moderate: "#fb923c",
-  high:     "#f87171",
-  peak:     "#dc2626",
+  genuine:  "#00e0a0",
+  mild:     "#f5a623",
+  moderate: "#f5a623",
+  high:     "#ff0055",
+  peak:     "#ff0055",
 };
 
 const TIER_VERDICTS = {
@@ -105,7 +105,7 @@ postInput.addEventListener("input", () => {
   analyzeBtn.disabled = len === 0;
 
   // Turn counter red near limit
-  charCount.style.color = len > 2700 ? "#f87171" : "";
+  charCount.style.color = len > 2700 ? "#ff0055" : "";
 });
 
 // ─── Render result ─────────────────────────────────────────────────────────────

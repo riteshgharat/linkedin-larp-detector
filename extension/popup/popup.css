@@ -1,38 +1,41 @@
-/* ===========================
-   Design Tokens
-   =========================== */
-:root {
-  --bg: #0f0f13;
-  --surface: #1a1a24;
-  --surface-2: #22223a;
-  --border: #2e2e45;
-  --accent: #6c63ff;
-  --accent-glow: rgba(108, 99, 255, 0.25);
-  --text: #e8e8f0;
-  --text-muted: #8888a8;
-  --radius: 12px;
-  --radius-sm: 8px;
+/* ==========================================================================
+   🎭 Vercel Dark Style Design System for LinkedIn LARP Detector Popup
+   ========================================================================== */
 
-  /* Score tier colors */
-  --genuine: #34d399;
-  --mild: #facc15;
-  --moderate: #fb923c;
-  --high: #f87171;
-  --peak: #dc2626;
+:root {
+  --bg: #000000;
+  --surface: #0a0a0a;
+  --surface-hover: #161616;
+  --border: #333333;
+  --border-hover: #444444;
+  --text: #ffffff;
+  --text-muted: #888888;
+  --radius: 8px;
+  --radius-sm: 6px;
+
+  /* Score tier colors (refined modern shades) */
+  --genuine: #00e0a0;
+  --mild: #f5a623;
+  --moderate: #f5a623;
+  --high: #ff0055;
+  --peak: #ff0055;
 }
 
 /* ===========================
    Reset & Base
    =========================== */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 body {
   width: 360px;
-  min-height: 200px;
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
-  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+  font-size: 13.5px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
@@ -41,7 +44,9 @@ body {
    App shell
    =========================== */
 .app {
-  padding: 0 0 12px;
+  padding: 0 0 16px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ===========================
@@ -51,48 +56,51 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 16px 12px;
+  padding: 16px 18px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(135deg, #13131f 0%, #1a1a2e 100%);
+  background: var(--bg);
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .logo-icon {
-  font-size: 26px;
-  filter: drop-shadow(0 0 8px rgba(108,99,255,0.6));
+  font-size: 20px;
 }
 
 .logo-title {
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   color: var(--text);
 }
 
 .logo-sub {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-muted);
+  font-family: monospace;
 }
 
 .icon-btn {
-  background: none;
+  background: transparent;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   padding: 6px 8px;
-  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
 }
 .icon-btn:hover {
-  background: var(--surface-2);
+  background: var(--surface-hover);
   color: var(--text);
-  border-color: var(--accent);
+  border-color: var(--border-hover);
 }
 
 /* ===========================
@@ -101,26 +109,27 @@ body {
 .status-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: 6px;
+  padding: 8px 18px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  font-size: 12px;
+  font-size: 11px;
+  font-family: monospace;
   color: var(--text-muted);
 }
 
 .status-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.status-checking { background: var(--text-muted); animation: pulse 1.2s infinite; }
-.status-ok       { background: var(--genuine); }
-.status-error    { background: var(--peak); }
+.status-dot.status-checking { background: var(--text-muted); animation: larpPulse 1.2s infinite; }
+.status-dot.status-ok       { background: var(--genuine); }
+.status-dot.status-error    { background: var(--peak); }
 
-@keyframes pulse {
+@keyframes larpPulse {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.3; }
 }
@@ -129,17 +138,18 @@ body {
    Main panel
    =========================== */
 main {
-  padding: 14px 16px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .hint {
   font-size: 12px;
   color: var(--text-muted);
-  text-align: center;
-  line-height: 1.6;
+  text-align: left;
+  line-height: 1.5;
+  margin-bottom: 2px;
 }
 
 /* ===========================
@@ -151,32 +161,34 @@ main {
 
 textarea {
   width: 100%;
-  resize: vertical;
+  resize: none;
   background: var(--surface);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
   font-family: inherit;
   font-size: 13px;
-  line-height: 1.5;
-  padding: 10px 12px 28px;
-  transition: border-color 0.2s;
+  line-height: 1.6;
+  padding: 12px 12px 32px;
+  transition: border-color 0.15s ease;
   outline: none;
 }
 
 textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-glow);
+  border-color: #888888;
 }
 
-textarea::placeholder { color: var(--text-muted); }
+textarea::placeholder {
+  color: #444444;
+}
 
 .char-count {
   position: absolute;
-  bottom: 8px;
-  right: 10px;
-  font-size: 11px;
-  color: var(--text-muted);
+  bottom: 10px;
+  right: 12px;
+  font-size: 10px;
+  font-family: monospace;
+  color: #444444;
 }
 
 /* ===========================
@@ -186,62 +198,65 @@ textarea::placeholder { color: var(--text-muted); }
   width: 100%;
   padding: 10px 16px;
   border-radius: var(--radius-sm);
-  border: none;
+  border: 1px solid var(--border);
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  transition: all 0.2s ease;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  font-family: inherit;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent) 0%, #9b59b6 100%);
-  color: #fff;
-  box-shadow: 0 4px 14px rgba(108,99,255,0.35);
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
 }
 
 .btn-primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(108,99,255,0.5);
+  background: #eaeaea;
+  border-color: #eaeaea;
 }
 
 .btn-primary:active:not(:disabled) {
-  transform: translateY(0);
+  background: #d5d5d5;
 }
 
 .btn-primary:disabled {
-  opacity: 0.4;
+  background: #111111;
+  border-color: var(--border);
+  color: #444444;
   cursor: not-allowed;
 }
 
 .btn-ghost {
   background: transparent;
   color: var(--text-muted);
-  border: 1px solid var(--border);
+  border-color: var(--border);
 }
 
 .btn-ghost:hover {
-  background: var(--surface-2);
+  background: var(--surface-hover);
   color: var(--text);
+  border-color: var(--border-hover);
 }
 
 /* ===========================
    Spinner
    =========================== */
 .spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: #fff;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0,0,0,0.1);
+  border-top-color: #000000;
   border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+  animation: larpSpin 0.6s linear infinite;
 }
 
-@keyframes spin {
+@keyframes larpSpin {
   to { transform: rotate(360deg); }
 }
 
@@ -250,157 +265,167 @@ textarea::placeholder { color: var(--text-muted); }
    =========================== */
 .result-card {
   background: var(--surface);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px;
-  animation: slideIn 0.3s ease;
+  padding: 16px;
+  animation: larpSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(-8px); }
+@keyframes larpSlideIn {
+  from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 .result-header {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 12px;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
 }
 
 .score-block {
   display: flex;
   align-items: baseline;
-  gap: 3px;
-  flex-shrink: 0;
+  gap: 2px;
 }
 
 .score-num {
-  font-size: 40px;
-  font-weight: 800;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
   line-height: 1;
-  /* color set dynamically by JS */
 }
 
 .score-label {
-  font-size: 14px;
+  font-size: 12px;
   color: var(--text-muted);
-  font-weight: 600;
+  font-family: monospace;
+}
+
+.score-meta {
+  text-align: right;
 }
 
 .score-verdict {
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   margin-bottom: 2px;
 }
 
 .score-category {
   font-size: 11px;
   color: var(--text-muted);
-  font-style: italic;
+  font-family: monospace;
 }
 
 /* Score progress bar */
 .score-bar-track {
-  height: 5px;
+  height: 2px;
   background: var(--border);
   border-radius: 999px;
   overflow: hidden;
-  margin-bottom: 14px;
+  margin-top: -4px;
 }
 
 .score-bar {
   height: 100%;
   border-radius: 999px;
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Result sections */
-.result-section { margin-bottom: 10px; }
-.result-section:last-of-type { margin-bottom: 0; }
+.result-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
 .section-title {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
   color: var(--text-muted);
-  margin-bottom: 4px;
 }
 
 .section-body {
   font-size: 13px;
-  line-height: 1.55;
-  color: var(--text);
+  line-height: 1.5;
+  color: #dddddd;
 }
 
 .section-body.translation {
-  background: var(--surface-2);
+  background: #111111;
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
   font-style: italic;
-  color: var(--text-muted);
-  border-left: 3px solid var(--accent);
+  color: #ffffff;
 }
 
 .cached-badge {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-muted);
+  font-family: monospace;
   text-align: right;
-  margin-top: 8px;
 }
 
 /* ===========================
    Error message
    =========================== */
 .error-msg {
-  background: rgba(220, 38, 38, 0.1);
-  border: 1px solid rgba(220, 38, 38, 0.4);
+  background: rgba(255, 0, 85, 0.05);
+  border: 1px solid rgba(255, 0, 85, 0.2);
   border-radius: var(--radius-sm);
-  color: #fca5a5;
-  font-size: 13px;
+  color: #ff0055;
+  font-size: 12px;
   padding: 10px 12px;
   text-align: center;
+  font-family: monospace;
 }
 
 /* ===========================
    Settings panel
    =========================== */
 .settings-panel {
-  padding: 16px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .settings-title {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   margin-bottom: 4px;
 }
 
 .settings-label {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
-  font-weight: 600;
+  font-weight: 500;
+  font-family: monospace;
 }
 
 .settings-input {
   background: var(--surface);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
   font-family: monospace;
-  font-size: 13px;
+  font-size: 12px;
   outline: none;
-  padding: 9px 12px;
-  transition: border-color 0.2s;
+  padding: 8px 12px;
+  transition: border-color 0.15s ease;
   width: 100%;
 }
 
 .settings-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-glow);
+  border-color: #888888;
 }
 
 /* ===========================
