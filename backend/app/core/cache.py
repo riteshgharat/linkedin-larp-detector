@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import json
 import logging
@@ -10,21 +11,26 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 _client: redis.Redis | None = None
+_client_lock = asyncio.Lock()  # WR-04: guards lazy init against concurrent coroutines
 
 _REQUIRED_FIELDS = frozenset({"score", "category", "reason", "translation"})
 
 
-def get_client() -> redis.Redis:
+async def get_client() -> redis.Redis:
+    """Return the shared Redis client, initializing it once (concurrency-safe)."""
     global _client
     if _client is None:
-        _client = redis.from_url(
-            settings.redis_url,
-            decode_responses=True,
-            socket_connect_timeout=2,
-            socket_timeout=2,
-            retry_on_timeout=True,
-            health_check_interval=30,
-        )
+        async with _client_lock:
+            # Double-checked locking: re-test inside the lock
+            if _client is None:
+                _client = redis.from_url(
+                    settings.redis_url,
+                    decode_responses=True,
+                    socket_connect_timeout=2,
+                    socket_timeout=2,
+                    retry_on_timeout=True,
+                    health_check_interval=30,
+                )
     return _client
 
 
@@ -52,7 +58,7 @@ async def get_cached(text: str) -> dict | None:
         return None
 
     try:
-        result = await get_client().get(make_cache_key(text))
+        result = await (await get_client()).get(make_cache_key(text))
     except RedisError as exc:
         logger.warning("Cache read failed: %s", exc)
         return None
@@ -72,7 +78,7 @@ async def set_cached(text: str, data: dict) -> None:
 
     try:
         payload = json.dumps(data)
-        await get_client().setex(
+        await (await get_client()).setex(
             make_cache_key(text),
             settings.cache_ttl_seconds,
             payload,
