@@ -170,17 +170,15 @@ function renderInlineAppend(postEl, data) {
     padding: 8px 0 !important;
   `;
 
-  // Add a line break before the appended content for spacing
-  const br = document.createElement("br");
-  container.appendChild(br);
+  // Add line breaks around appended content for spacing
+  container.appendChild(document.createElement("br"));
 
   // ── Horizontal divider ──────────────────────────────────────────────────
   const hr = document.createElement("hr");
   hr.setAttribute("role", "presentation");
   hr.className = "_960d361f acb5560b ed11bcb6 a54b1fae _622c5a1f _4406420e _527ddd1b _27a6d872 _08e1db09 e837d6e6 _3936bd2f f47ec750";
   container.appendChild(hr);
-  container.appendChild(br);
-
+  container.appendChild(document.createElement("br"));
   // ── Score badge (inline-flex pill) ──────────────────────────────────────
   // All dynamic values set via textContent — safe against XSS (CR-02)
   const badge = document.createElement("div");
